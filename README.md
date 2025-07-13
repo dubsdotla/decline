@@ -1,5 +1,7 @@
 
-<img width="256" height="256" alt="AppIconLight256" src="https://github.com/user-attachments/assets/e77cd73e-bb26-459d-b1d7-e94b1a170e24" />
+<p align="center">
+	<img width="256" height="256" alt="AppIconLight256" src="https://github.com/user-attachments/assets/e77cd73e-bb26-459d-b1d7-e94b1a170e24" />
+</p>
 
 # decline
 
