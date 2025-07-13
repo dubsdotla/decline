@@ -1,4 +1,4 @@
-![AppIconLight](https://github.com/user-attachments/assets/f3f486ab-94c1-4f48-b462-b2880c6cc986)
+<img width="512" height="512" alt="AppIconLight" src="https://github.com/user-attachments/assets/ba67781a-9f48-4515-a872-b4cf7641f96d" />
 
 # decline
 
