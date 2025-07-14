@@ -20,12 +20,12 @@
         return nil;
     }
     
-    // 2) Filter to only “number.prefix.png” names
+    // Filter to only “number.prefix.png” names
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", @"^[0-9]+(\\..+)?\\.png$"];
     NSArray<NSString*> *iconFileNames =
     [allFiles filteredArrayUsingPredicate:predicate];
     
-    // 3) Build a dictionary: { @"1" : @"1.foo.png", @"20" : @"20.bar.png", … }
+    // Build a dictionary: { @"1" : @"1.foo.png", @"20" : @"20.bar.png", … }
     NSMutableDictionary<NSString*, NSString*> *iconsByPrefix = [NSMutableDictionary dictionary];
     for (NSString *fileName in iconFileNames) {
         // split at the first “.”
@@ -35,7 +35,7 @@
         }
     }
     
-    // 4) (Optional) Make it immutable
+    // (Optional) Make it immutable
     return [iconsByPrefix copy];
     
     // iconsDict now maps @"1" → @"1.foo.png", etc.

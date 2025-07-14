@@ -62,7 +62,7 @@
     // hook it up
     scroll.documentView = self.textView;
 
-    // 4) OK button
+    // OK button
     self.okayButton = [NSButton buttonWithTitle:@"agree" target:self action:@selector(okPressed)];
     
     self.okayButton.bezelStyle = NSBezelStyleRounded;
@@ -70,7 +70,7 @@
     [self.okayButton setKeyEquivalent:@"\r"];
     [self.view addSubview:self.okayButton];
 
-    // 5) Auto Layout for heading, scroll, OK button
+    // Auto Layout for heading, scroll, OK button
     [NSLayoutConstraint activateConstraints:@[
         // scroll‐view
         [scroll.topAnchor      constraintEqualToAnchor:self.view.topAnchor constant:20],
@@ -83,7 +83,7 @@
         [self.okayButton.bottomAnchor   constraintEqualToAnchor:self.view.bottomAnchor constant:-20],
     ]];
 
-    // 6) Fill the text
+    // Fill the text
     NSAttributedString *attStr = [[NSAttributedString alloc]
         initWithString:_agreement
             attributes:@{
@@ -96,8 +96,8 @@
     [self.textView checkTextInDocument:nil];
     [self.textView setEditable:NO];
 
-    // 7) Now size the textView to fit *all* of its content, so the scroll‐view can scroll.
-    //    Force the scroll‐view to layout so its contentSize is valid:
+    // Now size the textView to fit *all* of its content, so the scroll‐view can scroll.
+    // Force the scroll‐view to layout so its contentSize is valid:
     [scroll layoutSubtreeIfNeeded];
     NSSize contentSize = scroll.contentSize;
 

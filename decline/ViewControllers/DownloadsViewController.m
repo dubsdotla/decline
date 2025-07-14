@@ -14,7 +14,7 @@
 @implementation DownloadsViewController
 
 - (void)loadView {
-    // 1) Use a vibrancy background so it looks like Safari’s popover
+    // Use a vibrancy background so it looks like Safari’s popover
     NSVisualEffectView *bg = [NSVisualEffectView new];
     bg.blendingMode = NSVisualEffectBlendingModeBehindWindow;
     bg.material     = NSVisualEffectMaterialSidebar;  // light sidebar look
@@ -25,7 +25,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // 2) Header row: “Downloads” + “Clear”
+    // Header row: “Downloads” + “Clear”
     NSTextField *title = [NSTextField labelWithString:@"Downloads"];
     title.font = [NSFont systemFontOfSize:14 weight:NSFontWeightSemibold];
 
@@ -37,7 +37,7 @@
     header.edgeInsets  = NSEdgeInsetsMake(8, 12, 4, 12);
     header.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // 3) Table of downloads
+    // Table of downloads
     self.tableView = [[NSTableView alloc] initWithFrame:NSZeroRect];
     self.tableView.delegate   = self;
     self.tableView.dataSource = self;
@@ -58,14 +58,14 @@
     scroll.backgroundColor    = NSColor.clearColor;
     scroll.drawsBackground    = NO;
 
-    // 4) Stack the header & scroll in a vertical stack
+    // Stack the header & scroll in a vertical stack
     NSStackView *vstack = [NSStackView stackViewWithViews:@[header, scroll]];
     vstack.orientation = NSUserInterfaceLayoutOrientationVertical;
     vstack.edgeInsets  = NSEdgeInsetsMake(10,0,0,0);
     vstack.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:vstack];
 
-    // 5) Constraints
+    // Constraints
     [NSLayoutConstraint activateConstraints:@[
       [vstack.leadingAnchor  constraintEqualToAnchor:self.view.leadingAnchor],
       [vstack.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],

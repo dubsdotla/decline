@@ -21,12 +21,12 @@
         return nil;
     }
 
-    // 1) Specify that we want RTF‐format input
+    // Specify that we want RTF‐format input
     NSDictionary<NSAttributedStringDocumentReadingOptionKey, id> *readOptions = @{
         NSDocumentTypeDocumentOption: NSRTFTextDocumentType
     };
 
-    // 2) Use the built‐in initWithURL:options:… initializer
+    // Use the built‐in initWithURL:options:… initializer
     NSAttributedString *result = [[self alloc] initWithURL:fileURL
                                                    options:readOptions
                                         documentAttributes:NULL
@@ -46,12 +46,12 @@
         return NO;
     }
 
-    // 1) Tell AppKit we want RTF output
+    // Tell AppKit we want RTF output
     NSDictionary<NSAttributedStringDocumentAttributeKey, id> *writeOptions = @{
         NSDocumentTypeDocumentAttribute: NSRTFTextDocumentType
     };
 
-    // 2) Convert the entire range to RTF data
+    // Convert the entire range to RTF data
     NSData *rtfData = [self dataFromRange:NSMakeRange(0, self.length)
                         documentAttributes:writeOptions
                                      error:error];
@@ -60,7 +60,7 @@
         return NO;
     }
 
-    // 3) Write the data atomically to disk
+    // Write the data atomically to disk
     return [rtfData writeToURL:fileURL
                        options:NSDataWritingAtomic
                          error:error];

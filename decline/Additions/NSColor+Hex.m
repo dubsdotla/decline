@@ -10,20 +10,20 @@
 @implementation NSColor (Hex)
 
 + (NSColor*)colorWithHexString:(NSString*)hexString {
-    // 1) Trim whitespace/newlines and uppercase
+    // Trim whitespace/newlines and uppercase
     NSString *s = [[hexString stringByTrimmingCharactersInSet:
                      [NSCharacterSet whitespaceAndNewlineCharacterSet]]
                     uppercaseString];
-    // 2) Remove leading “#” if present
+    // Remove leading “#” if present
     if ([s hasPrefix:@"#"]) s = [s substringFromIndex:1];
 
-    // 3) Must be 6 or 8 characters
+    // Must be 6 or 8 characters
     if (s.length != 6 && s.length != 8) {
         NSLog(@"[HexColor] Invalid hex length: %@", hexString);
         return nil;
     }
 
-    // 4) Scan into an unsigned int
+    // Scan into an unsigned int
     unsigned int rgba = 0;
     NSScanner *scanner = [NSScanner scannerWithString:s];
     [scanner scanHexInt:&rgba];

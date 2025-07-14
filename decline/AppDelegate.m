@@ -224,7 +224,7 @@
 
 - (void)removeClient:(NSUUID*)uuid {
     
-    // 1) Find the index of the client with that UUID
+    // Find the index of the client with that UUID
     NSUInteger idx = [self.clients indexOfObjectPassingTest:^BOOL(HotlineClient *client, NSUInteger idx, BOOL *stop) {
         if ([client.uuid isEqual:uuid]) {
             *stop = YES;
@@ -233,7 +233,7 @@
         return NO;
     }];
     
-    // 2) If found, remove it
+    // If found, remove it
     if (idx != NSNotFound) {
         [self.clients removeObjectAtIndex:idx];
     }
@@ -243,14 +243,6 @@
     NSScreen *mainScreen = [NSScreen mainScreen];
     NSRect vis = [mainScreen visibleFrame];  // skip menu + dock
     NSUInteger count = self.clients.count;
-    
-    /*NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(HotlineClient *client, NSDictionary *bindings) {
-        return client.uiState != ClientUIStateConnect;
-    }];
-
-    NSArray<HotlineClient *> *filteredClients = [self.clients filteredArrayUsingPredicate:predicate];
-    
-    NSUInteger count = filteredClients.count;*/
     
     NSUInteger cols = ceil(sqrt(count));
     NSUInteger rows = (count + cols - 1) / cols;
@@ -266,7 +258,7 @@
             w, h
         );
         [client.window setFrame:f display:YES animate:NO];
-        [client.chatTextView  scrollToEndOfDocument:nil];
+        [client.chatTextView scrollToEndOfDocument:nil];
     }];
 }
 

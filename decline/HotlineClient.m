@@ -681,7 +681,7 @@
 }
 
 /*- (IBAction)openUser:(id)sender {
-    // 1) Create the alert as a sheet
+    // Create the alert as a sheet
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText    = @"Open User";
     alert.informativeText = @"Enter username:";
@@ -689,12 +689,12 @@
     [alert addButtonWithTitle:@"OK"];
     [alert addButtonWithTitle:@"Cancel"];
     
-    // 2) Add a text‐field as the accessory view
+    // Add a text‐field as the accessory view
     NSTextField *field = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
     field.stringValue = @"";
     alert.accessoryView = field;
     
-    // 3) Show as sheet on your main window
+    // Show as sheet on your main window
     [alert beginSheetModalForWindow:self.window
                   completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertFirstButtonReturn) {
@@ -912,7 +912,7 @@
 {
     if(tv == self.userListView) {
         
-        // 1) Ask for—or create—a reusable cell
+        // Ask for—or create—a reusable cell
         NSTableCellView *cell = [tv makeViewWithIdentifier:@"nickCell" owner:self];
         if (!cell) {
             cell = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
@@ -951,11 +951,11 @@
             ]];
         }
         
-        // 2) Populate
+        // Populate
         NSDictionary *u = self.users[row];
         cell.textField.stringValue = u[@"nick"] ?: @"";
         
-        // 3) Avatar logic
+        // Icon logic
         NSString *iconNumberStr = [u[@"icon"] stringValue];
         NSString *iconNumberFilename;
         NSDictionary *iconFilenamesDict = [UserIcons standardUserIconsDict];
@@ -977,7 +977,7 @@
             cell.imageView.hidden = YES;
         }
         
-        // 4) Color by status (unchanged)
+        // Color by status (unchanged)
         NSInteger status = [u[@"status"] integerValue];
         switch (status) {
             case 0: cell.textField.textColor = [NSColor textColor]; break;
@@ -1636,11 +1636,11 @@
     self.handshakeState = HandshakeStateWaitingForHello;
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        // 1) Create and configure the view controller
+        // Create and configure the view controller
         NSString *msg = [NSString stringWithFormat:@"Connecting to %@…", self.serverAddress];
         ConnectingViewController *vc = [[ConnectingViewController alloc] initWithMessage:msg];
 
-        // 2) Create a sheet window
+        // Create a sheet window
         self.connectingSheetWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,325,80)
                                                       styleMask:(NSWindowStyleMaskTitled)
                                                         backing:NSBackingStoreBuffered
@@ -1649,7 +1649,7 @@
         self.connectingSheetWindow.title                 = @"Please wait";
 
 
-        // 4) Begin sheet
+        // Begin sheet
         [self.connectionWindow beginSheet:self.connectingSheetWindow completionHandler:^(NSModalResponse returnCode) {
         }];
     });
@@ -1740,7 +1740,7 @@
     [payload appendBytes:&lenBE length:2];
     [payload appendData:utf8];
     
-    // 2) DEBUG: inspect each object in the payload
+    // DEBUG: inspect each object in the payload
     {
       const uint8_t *p = payload.bytes;
       uint16_t count = ntohs(*(uint16_t*)p); p += 2;
@@ -1787,12 +1787,12 @@
 }
 
 - (void)sendModifyUserPrivilegesWithMask:(uint64_t)newPrivMask forStream:(NSOutputStream *)stream {
-    // 1) Build the payload header: 4 objects
+    // Build the payload header: 4 objects
     NSMutableData *payload = [NSMutableData data];
     uint16_t objCountBE = htons(4);
     [payload appendBytes:&objCountBE length:2];
 
-    // 2) Helper to append any OID + its raw data
+    // Helper to append any OID + its raw data
     void (^appendOID)(uint16_t oid, NSData *d) = ^(uint16_t oid, NSData *d) {
         uint16_t oidBE = htons(oid);
         uint16_t lenBE = htons((uint16_t)d.length);
@@ -1801,11 +1801,11 @@
         [payload appendData:d];
     };
 
-    // --- 2a) OID 102: nick (plain UTF-8) ---
+    // --- OID 102: nick (plain UTF-8) ---
     NSData *nickData = [self.openUserNick ?: @"" dataUsingEncoding:NSUTF8StringEncoding];
     appendOID(102, nickData);
 
-    // --- 2b) OID 105: login (XOR-encoded) ---
+    // --- OID 105: login (XOR-encoded) ---
     NSData *rawLogin = [self.openUserLogin ?: @"" dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *encLogin = [rawLogin mutableCopy];
     uint8_t *loginBytes = encLogin.mutableBytes;
@@ -1814,11 +1814,11 @@
     }
     appendOID(105, encLogin);
 
-    // --- 2c) OID 106: password (NUL if unchanged, else UTF-8) ---
+    // --- OID 106: password (NUL if unchanged, else UTF-8) ---
     NSData *pwBytes = [self passwordBytesForModify];  // helper returns NUL or UTF-8
     appendOID(106, pwBytes);
 
-    // --- 2d) OID 110: priv-mask (8 bytes, BE bit order) ---
+    // --- OID 110: priv-mask (8 bytes, BE bit order) ---
     uint8_t privBytes[8] = {0};
     for (NSUInteger bit = 0; bit < 38; bit++) {
         if ((newPrivMask >> bit) & 1ULL) {
@@ -1864,7 +1864,7 @@
         }
     }
 
-    // 3) Build TX353 header
+    // Build TX353 header
     uint8_t  flags   = 0, rep = 0;
     uint16_t typeBE  = htons(353);
     uint32_t txidBE  = htonl(self.nextTxID++);
@@ -1881,10 +1881,10 @@
     [packet appendBytes:&sizeBE length:4];
     [packet appendData:payload];
 
-    // 4) Send it
+    // Send it
     [stream write:packet.bytes maxLength:packet.length];
 
-    // 5) Refresh user record
+    // Refresh user record
     //self.awaitingOpenUser = YES;
     //[self sendOpenUserTransaction:self.lastOpenLogin];
 }*/
@@ -1918,7 +1918,7 @@
 
 // the single entry point for both streams
 -  (void)stream:(NSStream*)s handleEvent:(NSStreamEvent)event {
-    // ─── 1) If we hit ErrorOccurred or EndEncountered on either stream,
+    // ───    If we hit ErrorOccurred or EndEncountered on either stream,
     //        clean up & schedule a reconnect.
     if (event == NSStreamEventErrorOccurred || event == NSStreamEventEndEncountered) {
         NSError *err = [s streamError];
@@ -1931,7 +1931,7 @@
         return; // bail out, do not proceed to handshake or byte‐reading logic
     }
 
-    // ─── 2) If we’re still waiting for the server “Hello” and the outputStream is now writable,
+    // ───    If we’re still waiting for the server “Hello” and the outputStream is now writable,
     //        perform the handshake.
     if ( self.handshakeState == HandshakeStateWaitingForHello
       && s == self.outputStream
@@ -1941,7 +1941,7 @@
         return;
     }
 
-    // ─── 3) Otherwise, only process HasBytesAvailable on the inputStream.
+    // ───    Otherwise, only process HasBytesAvailable on the inputStream.
     if (s != self.inputStream || event != NSStreamEventHasBytesAvailable) {
         return;
     }
@@ -1976,15 +1976,15 @@
 #pragma mark - Handshake Steps
 
 - (void)performServerHandshake {
-   // 1) Build client hello (12 bytes)
-   //    “TRTP” + “HOTL” + uint16_t(minVer=1) + uint16_t(subVer=2)
+   // Build client hello (12 bytes)
+   // “TRTP” + “HOTL” + uint16_t(minVer=1) + uint16_t(subVer=2)
    uint8_t hello[12];
    memcpy(hello,          "TRTPHOTL",  8);
    uint16_t minVer = htons(1), subVer = htons(2);
    memcpy(hello + 8, &minVer, 2);
    memcpy(hello + 10,&subVer, 2);
 
-   // 2) Send it, and check you wrote all 12 bytes
+   // Send it, and check you wrote all 12 bytes
    NSInteger wrote = [self.outputStream write:hello maxLength:sizeof(hello)];
    if (wrote != sizeof(hello)) {
        NSLog(@"Handshake write failed: wrote %ld of %lu", (long)wrote, sizeof(hello));
@@ -1996,7 +1996,7 @@
        return;
    }
 
-   // 3) Read exactly 8 bytes back
+   // Read exactly 8 bytes back
    uint8_t resp[8] = {0};
    NSInteger  got = [self.inputStream read:resp maxLength:sizeof(resp)];
    if (got != sizeof(resp)) {
@@ -2009,10 +2009,10 @@
        return;
    }
 
-   // 4) Log the raw bytes so we can see what came back
+   // Log the raw bytes so we can see what came back
    NSLog(@"[DEBUG] Server hello: %@", [NSString hexStringFromData:[NSData dataWithBytes:resp length:8]]);
 
-   // 5) Validate signature + error code
+   // Validate signature + error code
    if (memcmp(resp, "TRTP", 4) != 0) {
        NSLog(@"Handshake error: bad signature %.4s", resp);
        
@@ -2033,7 +2033,7 @@
        return;
    }
 
-   // 6) Success → advance to login
+   // Success → advance to login
     self.handshakeState = HandshakeStateWaitingForLoginReply;
     [self.transactions sendLoginTransactionWithNick:self.nickname iconNum:self.iconNumber Login:self.login Pass:self.password forStream:self.outputStream];
 }
@@ -2213,7 +2213,7 @@
         [self processUserPrivsPayload:body];
     }
     
-    // 7) finish handshake
+    // finish handshake
     self.handshakeState = HandshakeStateConnected;
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -2587,7 +2587,7 @@
     return;
   }
 
-  // 1) count
+  // count
   uint16_t articleCount = CFSwapInt16BigToHost(*(uint16_t*)(bytes + pos));
   pos += 2;
   NSLog(@"📥 articleCount=%u payloadLen=%lu", articleCount, (unsigned long)len);
@@ -2596,7 +2596,7 @@
     NSLog(@"⚠️ no articles");
   }
   else {
-    // 2) id + claimed-len
+    // id + claimed-len
     if (pos + 4 > len) {
       NSLog(@"⚠️ not even room for article header");
     }
@@ -2611,7 +2611,7 @@
         textLen = (uint16_t)(len - pos);
       }
 
-      // 3) pull the real bytes out
+      // pull the real bytes out
       NSData *chunk = [payload subdataWithRange:NSMakeRange(pos, textLen)];
       NSString *newsText = [[NSString alloc] initWithData:chunk
                                                  encoding:NSUTF8StringEncoding];
@@ -2631,7 +2631,7 @@
     }
   }
 
-  // 4) render
+  // render
     if(self.hasReceivedInitialNews == NO) {
         self.hasReceivedInitialNews = YES;
 
@@ -2645,19 +2645,19 @@
             ps.paragraphSpacing    = 0;     // no extra paragraph‐to‐paragraph gap
             ps.paragraphSpacingBefore = 0;
 
-            // 2) Make your attributes
+            // Make your attributes
             NSDictionary *attrs = @{
                 NSParagraphStyleAttributeName: ps,
                 NSFontAttributeName:          self.newsTextView.font ?: [NSFont userFixedPitchFontOfSize:12],
                 NSForegroundColorAttributeName: [NSColor textColor]
             };
 
-            // 3) Apply to existing text
+            // Apply to existing text
             NSAttributedString *newText =
               [[NSAttributedString alloc] initWithString:all
                                               attributes:attrs];
 
-            // 4) So new typing uses the same style:
+            // So new typing uses the same style:
             self.newsTextView.defaultParagraphStyle = ps;
             self.newsTextView.typingAttributes      = attrs;
             
@@ -2676,7 +2676,7 @@
 
     NSLog(@"📥 processFileListPayload – payloadLen = %lu", (unsigned long)L);
 
-    // 1) Object‐count
+    // Object‐count
     if (L < 2) {
         NSLog(@"⚠️ Too short for object count");
         return;
@@ -2687,7 +2687,7 @@
     
     [self.filesModel removeAllObjects];
 
-    // 2) For each “file‐info” object
+    // For each “file‐info” object
     for (NSUInteger i = 0; i < objCount; i++) {
         if (p + 4 > L) { break; }
         uint16_t objectID  = CFSwapInt16BigToHost(*(uint16_t*)(b + p));  p += 2;
@@ -2779,7 +2779,7 @@
     
     self.directoryCache[self.filePath] = [self.filesModel copy];
 
-    // 3) Refresh UI on main thread:
+    // Refresh UI on main thread:
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.filesTableView reloadData];
     });    
@@ -2790,18 +2790,18 @@
     NSUInteger      L     = payload.length;
     NSUInteger      pos   = 0;
 
-    // 1) need at least two bytes for the object‐count
+    // need at least two bytes for the object‐count
     if (L < 2) {
         NSLog(@"⚠️ processFileInfoPayload: payload too short (%lu bytes)", (unsigned long)L);
         return;
     }
 
-    // 2) read how many objects are in here
+    // read how many objects are in here
     uint16_t objectCount = CFSwapInt16BigToHost(*(uint16_t*)(bytes + pos));
     pos += 2;
     NSLog(@"📦 processFileInfoPayload: objectCount = %u", objectCount);
 
-    // 3) loop over each (OID, len, data) triplet
+    // loop over each (OID, len, data) triplet
     for (uint16_t i = 0; i < objectCount; i++) {
         if (pos + 4 > L) {
             NSLog(@"    ⚠️ incomplete object[%u] header at offset %lu", i, (unsigned long)pos);
@@ -2819,11 +2819,11 @@
             break;
         }
 
-        // 4) raw-data logging
+        // raw-data logging
         NSData *objData = [NSData dataWithBytes:bytes + pos length:len];
         NSLog(@"    • object[%u] → OID=%u, len=%u, raw=%@", i, oid, len, objData);
 
-        // 5) peel off each OID into something useful
+        // peel off each OID into something useful
         switch (oid) {
           case 201: {   // File name
             NSString *name = [[NSString alloc] initWithBytes:bytes+pos
@@ -2892,7 +2892,7 @@
     NSUInteger       L   = pd.length;
     NSUInteger       p   = 0;
 
-    // 1) pull off object count
+    // pull off object count
     if (L < 2) return;
     uint16_t objCount = CFSwapInt16BigToHost(*(uint16_t*)(buf + p));
     p += 2;
@@ -2903,7 +2903,7 @@
     uint32_t referenceID  = 0;
     uint32_t waitingCount = 0;
 
-    // 2) now walk each (OID,len,data) object
+    // now walk each (OID,len,data) object
     for (uint16_t i = 0; i < objCount; i++) {
         if (p + 4 > L) break;                 // not enough for OID+len
         uint16_t oid = CFSwapInt16BigToHost(*(uint16_t*)(buf + p));
@@ -3468,7 +3468,24 @@
         [self.chatTextView setEditable:YES];
         [self.chatTextView.textStorage setAttributedString:self.cachedChatContents];
         [self.chatTextView checkTextInDocument:nil];
-        [self.chatTextView scrollToEndOfDocument:self];
+        
+        NSClipView    *clip     = self.chatScrollView.contentView;
+        NSView        *docView  = self.chatScrollView.documentView;
+        NSRect         docBounds = docView.bounds;
+        NSRect         visBounds = clip.bounds;
+
+        // are we already at (or very near) the bottom?
+        CGFloat visibleMaxY   = NSMaxY(visBounds);
+        CGFloat documentMaxY  = NSMaxY(docBounds);
+        BOOL    isAtBottom    = (visibleMaxY >= documentMaxY - 1);
+
+        if (isAtBottom) {
+            // only auto-scroll when the user hasn’t scrolled up
+            [self.chatTextView scrollRangeToVisible:
+                NSMakeRange(self.chatTextView.string.length, 0)];
+        }
+        
+        //[self.chatTextView scrollToEndOfDocument:self];
         [self.chatTextView setEditable:NO];
     });
 }
@@ -3542,7 +3559,24 @@
         [self.chatTextView setEditable:YES];
         [self.chatTextView.textStorage setAttributedString:self.cachedChatContents];
         [self.chatTextView checkTextInDocument:nil];
-        [self.chatTextView scrollToEndOfDocument:self];
+        
+        NSClipView    *clip     = self.chatScrollView.contentView;
+        NSView        *docView  = self.chatScrollView.documentView;
+        NSRect         docBounds = docView.bounds;
+        NSRect         visBounds = clip.bounds;
+
+        // are we already at (or very near) the bottom?
+        CGFloat visibleMaxY   = NSMaxY(visBounds);
+        CGFloat documentMaxY  = NSMaxY(docBounds);
+        BOOL    isAtBottom    = (visibleMaxY >= documentMaxY - 1);
+
+        if (isAtBottom) {
+            // only auto-scroll when the user hasn’t scrolled up
+            [self.chatTextView scrollRangeToVisible:
+                NSMakeRange(self.chatTextView.string.length, 0)];
+        }
+        
+        //[self.chatTextView scrollToEndOfDocument:self];
         [self.chatTextView setEditable:NO];
     });
 }

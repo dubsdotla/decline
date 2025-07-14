@@ -27,13 +27,13 @@
     NSView *v = [[NSView alloc] initWithFrame:NSMakeRect(0,0,325,80)];
     v.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // 1) Label
+    // Label
     NSTextField *label = [NSTextField labelWithString:self.message];
     label.font = [NSFont systemFontOfSize:13];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     [v addSubview:label];
 
-    // 2) Indeterminate progress bar
+    // Indeterminate progress bar
     NSProgressIndicator *spinner = [[NSProgressIndicator alloc] initWithFrame:NSZeroRect];
     spinner.translatesAutoresizingMaskIntoConstraints = NO;
     spinner.indeterminate = YES;

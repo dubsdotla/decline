@@ -144,7 +144,7 @@
     NSUInteger      p   = 0;
     NSUInteger      L   = all.length;
     
-    // 1)––– flat file header (“FILP”) –––
+    // ––– flat file header (“FILP”) –––
     if (p + 4 > L) return;
     NSString *magic = [[NSString alloc] initWithBytes:buf + p length:4 encoding:NSASCIIStringEncoding];
     p += 4;
@@ -161,7 +161,7 @@
     
     NSData *dataForkContents = nil;
     
-    // 2)––– iterate each fork –––
+    // ––– iterate each fork –––
     for (uint16_t i = 0; i < forkCount; i++) {
         if (p + 16 > L) break;  // need at least type(4)+comp(4)+rsvd(4)+size(4)
         
@@ -193,7 +193,7 @@
         return;
     }
     
-    // 3)––– write DATA to disk in ~/Downloads/<fileName> –––
+    // ––– write DATA to disk in ~/Downloads/<fileName> –––
     NSURL *downloads = [[[NSFileManager defaultManager]
                           URLsForDirectory:NSDownloadsDirectory
                           inDomains:NSUserDomainMask] firstObject];

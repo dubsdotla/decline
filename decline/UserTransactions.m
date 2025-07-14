@@ -180,7 +180,7 @@ NSData * _Nonnull HL_BE32(uint32_t v) {
 
     NSData *packet = [self packetWithType:121 payload:payload];
 
-    // — 4) Debug & send
+    // Debug & send
     NSLog(@"[DEBUG] → TX121: Agree + Auto-response (I agree!) totalBytes=%lu",
           (unsigned long)packet.length);
     

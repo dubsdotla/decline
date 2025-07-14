@@ -112,7 +112,7 @@
 - (void)viewWillAppear {
     [super viewWillAppear];
     
-    // 4) Populate its initial state from defaults
+    // Populate its initial state from defaults
     BOOL showJoin = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowJoinLeaveMessages"];
     self.joinLeaveCheckbox.state = showJoin ? NSControlStateValueOn : NSControlStateValueOff;
     

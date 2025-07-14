@@ -15,13 +15,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // 1) Heading
+    // Heading
     /*NSTextField *heading = [NSTextField labelWithString:@"Enter a new news post"];
     heading.font = [NSFont boldSystemFontOfSize:14];
     heading.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:heading];*/
     
-    // 2) Scroll + textView
+    // Scroll + textView
     NSScrollView *scroll = [[NSScrollView alloc] initWithFrame:NSZeroRect];
     scroll.translatesAutoresizingMaskIntoConstraints   = NO;
     scroll.hasVerticalScroller   = YES;
@@ -59,7 +59,7 @@
       [self.textView.heightAnchor   constraintGreaterThanOrEqualToConstant:100],
     ]];
     
-    // 3) Buttons
+    // Buttons
     self.cancelButton = [NSButton buttonWithTitle:@"Cancel"
                                            target:self
                                            action:@selector(cancelPressed)];
@@ -76,7 +76,7 @@
     [self.view addSubview:self.cancelButton];
     [self.view addSubview:self.okButton];
     
-    // 4) Auto Layout
+    // Auto Layout
     [NSLayoutConstraint activateConstraints:@[
       // heading
       //[heading.topAnchor     constraintEqualToAnchor:self.view.topAnchor constant:20],
