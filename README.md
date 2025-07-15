@@ -30,6 +30,10 @@ The following core features are currently **unimplemented** but planned :
 ## commands
 The following commands are currently recognized by the Chat input field:
 
+/icon [new icon number] 
+
+> **Example**: /icon 148
+
 /me [chat text to emote] 
 
 > **Example**: /me is catching up on chat
@@ -37,6 +41,11 @@ The following commands are currently recognized by the Chat input field:
 /msg [nickname of user to message] [your private message]
 
 > **Example**: /msg dubsdotla I am talking to myself
+
+/nick [new nickname] 
+
+> **Example**: /nick decline n00b
+
 
 
 More commands are in the works!
