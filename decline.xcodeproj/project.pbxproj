@@ -82,7 +82,6 @@
 				8CA6C5A12DD2E810001A675E /* Frameworks */,
 				8CA6C5A22DD2E810001A675E /* Resources */,
 				8C6BC7D32DEBC46A00A06308 /* Embed XPC Services */,
-				8C5D946C2E237ADE000033DE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -140,27 +139,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		8C5D946C2E237ADE000033DE /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# only bump on Release builds, if you like:\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  # bumps CFBundleVersion by 1\n  agvtool bump -all > /dev/null\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8CA6C5A02DD2E810001A675E /* Sources */ = {
@@ -306,7 +284,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7DS8S3ZLQ9;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -338,7 +316,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7DS8S3ZLQ9;
 				ENABLE_HARDENED_RUNTIME = YES;
