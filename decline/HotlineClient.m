@@ -954,6 +954,9 @@
         // Populate
         NSDictionary *u = self.users[row];
         cell.textField.stringValue = u[@"nick"] ?: @"";
+        cell.textField.lineBreakMode = NSLineBreakByTruncatingTail;
+        cell.textField.cell.wraps = NO;
+        cell.textField.cell.truncatesLastVisibleLine = YES;
         
         // Icon logic
         NSString *iconNumberStr = [u[@"icon"] stringValue];
@@ -3595,7 +3598,7 @@
             NSString *command = parts[0];
             NSString *name    = parts[1];
             
-            // 2. Compute where the “message” really starts in the original string
+            // 2. Compute where the “message” starts in the original string
             NSUInteger offset = command.length + 1 + name.length + 1;
             NSString *message = [text substringFromIndex:offset];
             
@@ -3625,9 +3628,12 @@
     else if ([text hasPrefix:@"/nick"]) {
         NSArray<NSString*> *parts = [text componentsSeparatedByString:@" "];
         
-        if (parts.count == 2) {
-            //NSString *command  = parts[0];
-            NSString *nickname = parts[1];
+        if (parts.count >= 2) {
+            NSString *command  = parts[0];
+     
+            //Compute where the “nickname” starts in the original string
+            NSUInteger offset = command.length + 1;
+            NSString *nickname = [text substringFromIndex:offset];
             
             self.nickname = nickname;
             
