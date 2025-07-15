@@ -6,7 +6,7 @@
 # decline
 The original decline was a 3rd party Hotline client for Mac OS X that I developed back in 2012.
 
-The source code to the original version of decline for has long since disappeared into the ether but that’s probably a good thing since it was a buggy mess 😅
+The source code to the original version of decline has long since disappeared into the ether but that’s probably a good thing since it was a buggy mess 😅
 
 But thankfully I’ve learned a few things since then and my vision of decline persists in this re-imagined version for modern macOS!
 
