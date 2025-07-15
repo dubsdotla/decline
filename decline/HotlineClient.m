@@ -3622,6 +3622,32 @@
         [self.transactions sendChatTransaction:[text substringFromIndex:3] asEmote:isEmote forStream:self.outputStream];
     }
     
+    else if ([text hasPrefix:@"/nick"]) {
+        NSArray<NSString*> *parts = [text componentsSeparatedByString:@" "];
+        
+        if (parts.count == 2) {
+            //NSString *command  = parts[0];
+            NSString *nickname = parts[1];
+            
+            self.nickname = nickname;
+            
+            [self.transactions sendSetUserInfoTransactionWithNick:self.nickname iconNum:self.iconNumber forStream:self.outputStream];
+        }
+    }
+    
+    else if ([text hasPrefix:@"/icon"]) {
+        NSArray<NSString*> *parts = [text componentsSeparatedByString:@" "];
+        
+        if (parts.count == 2) {
+            //NSString *command  = parts[0];
+            NSString *iconnumber = parts[1];
+            
+            self.iconNumber = (uint32_t)[iconnumber intValue];
+            
+            [self.transactions sendSetUserInfoTransactionWithNick:self.nickname iconNum:self.iconNumber forStream:self.outputStream];
+        }
+    }
+    
     else {
         // send with the appropriate flag
         [self.transactions sendChatTransaction:text asEmote:isEmote forStream:self.outputStream];
