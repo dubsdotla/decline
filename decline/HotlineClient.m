@@ -259,7 +259,9 @@
         
         selectBm.target = self;
     }
-        
+    
+    [self sortMenu:self.bookmarkMenu];
+    
     if(![self.serverField.textField.stringValue isEqualToString:@""]) {
         if (index != NSNotFound) {
             [self.bookmarkMenu addItem:[NSMenuItem separatorItem]];
@@ -275,8 +277,6 @@
             addBm.target = self;
         }
     }
-    
-    [self sortMenu:self.bookmarkMenu];
     
     self.serverField.popupMenu = self.bookmarkMenu;
     
