@@ -78,7 +78,7 @@
 
 @property (strong) NSInputStream  *inputStream;
 @property (strong) NSOutputStream *outputStream;
-@property (assign) NSInteger       handshakeState;   // 0=proto,1=login,2=setUser,3=ready
+@property (assign) NSInteger       handshakeState;
 
 @property (nonatomic, strong) NSMutableArray<FileTransferManager*> *fileTransfers;
 @property (strong) UserTransactions  *transactions;
@@ -111,6 +111,8 @@
 @property (nonatomic, strong) NSString *serverAddress;
 @property (nonatomic) int serverPort;
 @property (nonatomic) BOOL isReconnecting;
+@property (nonatomic) BOOL triedOnce;
+@property (nonatomic) uint32_t errorCode;
 
 @property (nonatomic, strong) NSThread *networkThread;
 

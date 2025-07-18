@@ -100,6 +100,9 @@
         [self.networkThread start];
         
         self.uiState = ClientUIStateConnect;
+        self.errorCode = 0;
+        self.triedOnce = NO;
+        self.isReconnecting = NO;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.connectionWindow.contentView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
@@ -1378,6 +1381,8 @@
 - (void)onConnect:(id)sender {
     //NSLog(@"onConnect");
     
+    [self transformToChatUI];
+    
     self.iconNumber = (uint32_t)[[NSUserDefaults standardUserDefaults] integerForKey:@"DefaultIcon"];
     
     NSArray<NSString *> *components = [self.serverField.textField.stringValue componentsSeparatedByString:@":"];
@@ -1470,6 +1475,7 @@
     // Remove toolbar
     [self.window setToolbar:nil];
     
+    //self.window.releasedWhenClosed = NO;
     [self.window close];
 }
 
@@ -1492,11 +1498,6 @@
 - (void)onReconnect {
     //Don't show agreement message because of reconnect
     self.showAgreementMessage = NO;
-    
-    [self performSelector:@selector(_closeStreams)
-                 onThread:self.networkThread
-               withObject:nil
-            waitUntilDone:NO];
         
     // Reset protocol state
     self.handshakeState = HandshakeStateWaitingForHello;
@@ -1522,10 +1523,11 @@
     
     // Open streams & start handshake
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)),
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
         [self connectToHost:self.serverAddress port:self.serverPort];
         self.isReconnecting = NO;
+        self.triedOnce = NO;
     });
 }
 
@@ -1617,7 +1619,7 @@
     typeCol.width = newType;
 }
 
-- (void)connectToHost:(NSString *)host port:(uint16_t)port {
+- (void)connectToHost:(NSString *)host port:(uint16_t)port {    
     CFReadStreamRef  r;
     CFWriteStreamRef w;
     CFStreamCreatePairWithSocketToHost(NULL,
@@ -1653,7 +1655,8 @@
 
 
         // Begin sheet
-        [self.connectionWindow beginSheet:self.connectingSheetWindow completionHandler:^(NSModalResponse returnCode) {
+        [self.window beginSheet:self.connectingSheetWindow completionHandler:^(NSModalResponse returnCode) {
+            self.connectingSheetWindow = nil;
         }];
     });
 }
@@ -1961,19 +1964,88 @@
     }
 }
 
-- (void)handleStreamDisconnection {
+- (void)handleStreamDisconnection
+{
     NSLog(@"handleStreamDisconnection");
     
     [self stopUserListTimer];
-    
-    // If already in the process of reconnecting, do nothing.
-    if (self.isReconnecting == NO) {
-        // Mark that we are now “reconnecting” so we don’t schedule multiple timers
-        self.isReconnecting = YES;
-        NSLog(@"⏳ Disconnected – will attempt to reconnect in 3 seconds…");
+        
+    [self performSelector:@selector(_closeStreams)
+                 onThread:self.networkThread
+               withObject:nil
+            waitUntilDone:NO];
 
-        [self onReconnect];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.window endSheet:self.connectingSheetWindow];
+        
+        // if we haven’t already asked once, show the alert
+        if (!self.triedOnce) {
+            self.triedOnce = YES;
+            
+            if(self.errorCode == 1) {
+                
+                NSLog(@"self.errorCode is 1");
+                
+                NSAlert *alert = [[NSAlert alloc] init];
+                [alert setMessageText:@"Incorrect Login"];
+                [alert setInformativeText:@"The server rejected your login credentials."];
+                [alert addButtonWithTitle:@"Disconnect"];
+                
+                NSModalResponse resp = [alert runModal];
+                if (resp == NSAlertFirstButtonReturn) {
+                    NSLog(@"Disconnect");
+                    [self onDisconnect:nil];
+                    AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
+                    [appDel newConnection];
+                }
+            }
+            
+            else if(self.handshakeState == HandshakeStateWaitingForHello) {
+                NSAlert *alert = [[NSAlert alloc] init];
+                [alert setMessageText:@"Connection Failed"];
+                [alert setInformativeText:@"The server appears to be down or unreachable."];
+                [alert addButtonWithTitle:@"Disconnect"];
+                
+                NSModalResponse resp = [alert runModal];
+                if (resp == NSAlertFirstButtonReturn) {
+                    NSLog(@"Disconnect");
+                    [self onDisconnect:nil];
+                    AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
+                    [appDel newConnection];
+                }
+            }
+            
+            //Connection Lost - Try to Reconnect
+            else {
+                /*NSAlert *alert = [[NSAlert alloc] init];
+                alert.messageText = @"Connection Lost";
+                alert.informativeText = @"The server appears to be down or unreachable. Would you like to try reconnecting?";
+                [alert addButtonWithTitle:@"Reconnect"];
+                [alert addButtonWithTitle:@"Disconnect"];
+
+                // if you're already in a sheet context, use beginSheetModalForWindow:…
+                NSModalResponse resp = [alert runModal];
+                if (resp == NSAlertFirstButtonReturn) {
+                    // user chose “Reconnect”
+                    [self onReconnect];
+                }
+                
+                else {
+                    [self onDisconnect:nil];
+                    AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
+                    [appDel newConnection];
+                }*/
+                
+                if (self.isReconnecting == NO) {
+                    // Mark that we are now “reconnecting” so we don’t schedule multiple timers
+                    self.isReconnecting = YES;
+                    NSLog(@"⏳ Disconnected – will attempt to reconnect in 5 seconds…");
+
+                    [self onReconnect];
+                }
+            }
+        }
+    });
 }
 
 #pragma mark - Handshake Steps
@@ -2068,34 +2140,23 @@
     uint16_t txClass    = ntohs(*(uint16_t*)(hdr + 0));
     uint16_t txID       = ntohs(*(uint16_t*)(hdr + 2));
     uint32_t taskNumber = ntohl(*(uint32_t*)(hdr + 4));
-    uint32_t errCode    = ntohl(*(uint32_t*)(hdr + 8));
+    uint32_t errorCode    = ntohl(*(uint32_t*)(hdr + 8));
     uint32_t payloadLen = ntohl(*(uint32_t*)(hdr + 12));
 
     NSLog(@"[DEBUG] login-reply header:");
     NSLog(@"   class    = %u",    txClass);
     NSLog(@"   ID       = %u",    txID);
     NSLog(@"   task#    = %u",    taskNumber);
-    NSLog(@"   error    = %u %@", errCode,
-          errCode==0 ? @"(OK)" : @"(FAIL)");
+    NSLog(@"   error    = %u %@", errorCode,
+          errorCode==0 ? @"(OK)" : @"(FAIL)");
     NSLog(@"   dataLen  = %u",    payloadLen);
         
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.window endSheet:self.connectingSheetWindow];
-
-        if(errCode == 1) {
-            NSAlert *alert = [[NSAlert alloc] init];
-            [alert setMessageText:@"Incorrect login"];
-            [alert setInformativeText:@""];
-            [alert addButtonWithTitle:@"OK"];
-               
-            // Show the alert
-            [alert runModal];
-            
-            [self onDisconnect:nil];
-        }
         
-        else {
-            [self transformToChatUI];
+        if(errorCode == 1) {
+            self.errorCode = 1;
+            return;
         }
     });
 
