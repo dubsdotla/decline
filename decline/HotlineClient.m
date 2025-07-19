@@ -3296,7 +3296,40 @@ doCommandBySelector:(SEL)commandSelector
                 [self.newsItems insertObject:article atIndex:0];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (self.uiState == ClientUIStateNews) {
-                        [self.newsTextView setString:[self.newsItems componentsJoinedByString:@"\n"]];
+                        
+                        // Repopulate
+                        NSMutableString *allNews = [NSMutableString string];
+                        for (NSString *item in self.newsItems) {
+                            [allNews appendFormat:@"%@\n", item];
+                        }
+                        
+                        NSMutableParagraphStyle *ps = [[NSMutableParagraphStyle alloc] init];
+                        ps.lineHeightMultiple = 1.25;
+                        ps.paragraphSpacing    = 0.0;     // no extra paragraph‐to‐paragraph gap
+                        ps.paragraphSpacingBefore = 0;
+
+                        // Make your attributes
+                        NSDictionary *attrs = @{
+                            NSParagraphStyleAttributeName: ps,
+                            NSFontAttributeName:          self.newsTextView.font ?: [NSFont userFixedPitchFontOfSize:12],
+                            NSForegroundColorAttributeName: [NSColor textColor]
+                        };
+
+                        // Apply to existing text
+                        NSAttributedString *newText =
+                          [[NSAttributedString alloc] initWithString:allNews
+                                                          attributes:attrs];
+
+                        // So new typing uses the same style:
+                        self.newsTextView.defaultParagraphStyle = ps;
+                        self.newsTextView.typingAttributes      = attrs;
+                        
+                        
+                        [self.newsTextView setEditable:YES];
+                        [self.newsTextView.textStorage setAttributedString:newText];
+                        
+                        [self.newsTextView checkTextInDocument:nil];
+                        [self.newsTextView setEditable:NO];
                     }
                 });
             }
