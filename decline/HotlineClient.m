@@ -37,6 +37,7 @@
         [self.connectionWindow setTitle:@"New Connection"];
         self.connectionWindow.restorable = NO;
         [self.connectionWindow makeKeyAndOrderFront:nil];
+        self.connectionWindow.delegate = self;
         
         self.cachedChatContents = [[NSMutableAttributedString alloc] init];
         self.transactions = [[UserTransactions alloc] init];
@@ -330,6 +331,7 @@
 #pragma mark – Transition to Chat UI
 
 - (void)transformToChatUI {
+    self.connectionWindow.delegate = nil;
     [self.connectionWindow orderOut:nil];
     
     NSRect frame = NSMakeRect(0, 0, kConnectWidth, kConnectHeight);
@@ -1529,6 +1531,8 @@ doCommandBySelector:(SEL)commandSelector
 
 - (void) windowWillClose:(NSNotification *) notification
 {
+    NSWindow *thewindow = [notification object];
+    
     AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
     [appDel removeClient:self.uuid];
     [appDel tileAllWindows];
@@ -1547,8 +1551,14 @@ doCommandBySelector:(SEL)commandSelector
     self.serverAddress = nil;
     self.networkThread = nil;
     
-    //self.window = nil;
-    self.connectionWindow = nil;
+    if(thewindow == self.window) {
+        self.connectionWindow = nil;
+    }
+    
+    else {
+        self.window = nil;
+    }
+    
     self.nickSheetWindow = nil;
     self.broadcastSheetWindow = nil;
     self.newsPostSheetWindow = nil;
