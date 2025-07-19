@@ -24,22 +24,6 @@
         
         self.showAgreementMessage = YES;
         
-        // create a single window
-        /*NSRect frame = NSMakeRect(0, 0, kConnectWidth, kConnectHeight);
-        self.window = [[NSWindow alloc] initWithContentRect:frame
-                                                  styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                                                             NSWindowStyleMaskMiniaturizable)
-                                                    backing:NSBackingStoreBuffered
-                                                      defer:NO];
-        
-        self.connectWindowFrame = self.window.frame;
-        
-        [self.window center];
-        [self.window setTitle:@"New Connection"];
-        [self.window makeKeyAndOrderFront:nil];
-        self.window.delegate = self;
-        self.window.restorable = NO;*/
-        
         NSRect frame = NSMakeRect(0, 0, kConnectWidth, kConnectHeight);
         self.connectionWindow = [[NSWindow alloc] initWithContentRect:frame
                                                   styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
@@ -821,9 +805,8 @@
     // Build the bottom input row
     NSTextField *input = [[NSTextField alloc] initWithFrame:NSZeroRect];
     input.translatesAutoresizingMaskIntoConstraints = NO;
-    input.target            = self;
-    input.action            = @selector(onSend:);
-    ((NSTextFieldCell*)input.cell).sendsActionOnEndEditing = YES;
+    input.delegate = self;
+    ((NSTextFieldCell*)input.cell).sendsActionOnEndEditing = NO;
     [chatPane addSubview:input];
     self.messageField = input;
 
@@ -893,6 +876,18 @@
     [self.window makeFirstResponder:self.messageField];
     
     [self.userListView reloadData];
+}
+
+- (BOOL)control:(NSControl*)control
+    textView:(NSTextView*)textView
+doCommandBySelector:(SEL)commandSelector
+{
+    if (commandSelector == @selector(insertNewline:)) {
+        // only when Return is pressed!
+        [self onSend:control];
+        return YES;    // we handled it—don’t also end editing
+    }
+    return NO;         // all other keys/text get standard behavior
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tv {
@@ -1525,6 +1520,7 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
+        NSLog(@"RETRY #%d", self.retries);
         [self connectToHost:self.serverAddress port:self.serverPort];
         self.isReconnecting = NO;
         self.triedOnce = NO;
@@ -2000,7 +1996,48 @@
                 }
             }
             
-            else if(self.handshakeState == HandshakeStateWaitingForHello) {
+            //Since self.retries we're still trying to reconnect after a dropped connection, will try a maximum of 5 times
+            else if(self.retries > 0) {
+                self.retries++;
+                
+                if(self.retries < 6) {
+                    if (self.isReconnecting == NO) {
+                        // Mark that we are now “reconnecting” so we don’t schedule multiple timers
+                        self.isReconnecting = YES;
+                        NSLog(@"⏳ Disconnected – will attempt to reconnect in 5 seconds…");
+
+                        [self onReconnect];
+                    }
+                }
+                
+                else {
+                    NSAlert *alert = [[NSAlert alloc] init];
+                    alert.messageText = @"Connection Lost";
+                    alert.informativeText = @"The server appears to be down or unreachable. Would you like to try reconnecting?";
+                    [alert addButtonWithTitle:@"Reconnect"];
+                    [alert addButtonWithTitle:@"Disconnect"];
+
+                    // if you're already in a sheet context, use beginSheetModalForWindow:…
+                    NSModalResponse resp = [alert runModal];
+                    if (resp == NSAlertFirstButtonReturn) {
+                        // user chose “Reconnect”
+                        
+                        self.retries = 1;
+                        
+                        [self onReconnect];
+                    }
+                    
+                    else {
+                        self.retries = 0;
+                        
+                        [self onDisconnect:nil];
+                        AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
+                        [appDel newConnection];
+                    }
+                }
+            }
+            
+            else if(self.handshakeState == HandshakeStateWaitingForHello && self.retries == 0) {
                 NSAlert *alert = [[NSAlert alloc] init];
                 [alert setMessageText:@"Connection Failed"];
                 [alert setInformativeText:@"The server appears to be down or unreachable."];
@@ -2015,32 +2052,15 @@
                 }
             }
             
-            //Connection Lost - Try to Reconnect
-            else {
-                /*NSAlert *alert = [[NSAlert alloc] init];
-                alert.messageText = @"Connection Lost";
-                alert.informativeText = @"The server appears to be down or unreachable. Would you like to try reconnecting?";
-                [alert addButtonWithTitle:@"Reconnect"];
-                [alert addButtonWithTitle:@"Disconnect"];
-
-                // if you're already in a sheet context, use beginSheetModalForWindow:…
-                NSModalResponse resp = [alert runModal];
-                if (resp == NSAlertFirstButtonReturn) {
-                    // user chose “Reconnect”
-                    [self onReconnect];
-                }
-                
-                else {
-                    [self onDisconnect:nil];
-                    AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
-                    [appDel newConnection];
-                }*/
-                
+            //Connection Lost - Initial attempt to reconnect
+            else if(self.handshakeState == HandshakeStateConnected) {
+                self.retries = 1;
+                                
                 if (self.isReconnecting == NO) {
                     // Mark that we are now “reconnecting” so we don’t schedule multiple timers
                     self.isReconnecting = YES;
                     NSLog(@"⏳ Disconnected – will attempt to reconnect in 5 seconds…");
-
+                    
                     [self onReconnect];
                 }
             }

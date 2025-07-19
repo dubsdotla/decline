@@ -110,6 +110,7 @@
 
 @property (nonatomic, strong) NSString *serverAddress;
 @property (nonatomic) int serverPort;
+@property (nonatomic) int retries;
 @property (nonatomic) BOOL isReconnecting;
 @property (nonatomic) BOOL triedOnce;
 @property (nonatomic) uint32_t errorCode;
