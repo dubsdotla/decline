@@ -167,6 +167,59 @@
     return YES;
 }
 
+-  (void)application:(NSApplication *)sender openURLs:(NSArray<NSURL *> *)urls {
+    for (NSURL *url in urls) {
+        NSLog(@"Received URL: %@", url.absoluteString);
+
+        // Parse the URL components
+        NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+        NSString *scheme = components.scheme;
+        NSString *host = components.host;
+        NSNumber *port = components.port; // Extract the port
+
+        NSLog(@"Scheme: %@", scheme);
+        NSLog(@"Host: %@", host);
+        NSLog(@"Port: %@", port ? port.stringValue : @"No port"); // Log the port
+
+        // Combine host and port if it exists
+        NSString *hostWithPort = port ? [NSString stringWithFormat:@"%@:%@", host, port] : host;
+
+        if(self.clients.count > 0) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                NSEvent *keyDownEvent = [NSEvent keyEventWithType:NSEventTypeKeyDown
+                                                             location:NSMakePoint(0, 0)
+                                                        modifierFlags:0
+                                                            timestamp:0
+                                                         windowNumber:0
+                                                              context:nil
+                                                          characters:@"\r"
+                                         charactersIgnoringModifiers:@"\r"
+                                                           isARepeat:NO
+                                                             keyCode:36];
+                
+                if([self.clients lastObject].uiState == ClientUIStateConnect) {
+                    HotlineClient *client = [self.clients lastObject];
+                    client.serverField.textField.stringValue = [NSString stringWithFormat:@"%@", hostWithPort];
+                    [client serverFieldUpdated];
+                    [client.connectButton performKeyEquivalent:keyDownEvent];
+                }
+                
+                else {
+                    [self newConnection];
+                    
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                        HotlineClient *client = [self.clients lastObject];
+                        client.serverField.textField.stringValue = [NSString stringWithFormat:@"%@", hostWithPort];
+                        [client serverFieldUpdated];
+                        [client.connectButton performKeyEquivalent:keyDownEvent];
+                    });
+                }
+            });
+        }
+    }
+}
+
 -  (void)applicationWillTerminate:(NSNotification *)aNotification {
     
     // Clean up

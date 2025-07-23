@@ -97,6 +97,33 @@
     
     return self;
 }
+
+- (void)serverFieldUpdated {
+    
+    if(![self.serverField.textField.stringValue isEqualToString: @""]) {
+        NSDictionary *userPassDict = [BookmarkManager retrieveCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue]];
+        
+        if(userPassDict[@"username"]) {
+            self.loginField.stringValue = userPassDict[@"username"];
+        }
+        
+        else {
+            self.loginField.stringValue = @"";
+        }
+        
+        if(userPassDict[@"password"]) {
+            self.passwordField.stringValue = userPassDict[@"password"];
+        }
+        
+        else {
+            self.passwordField.stringValue = @"";
+        }
+    }
+}
+
+- (void)controlTextDidChange:(NSNotification *)obj {
+    [self serverFieldUpdated];
+}
     
 - (void)buildConnectUI {
     NSView *c = self.connectionWindow.contentView;
@@ -121,6 +148,7 @@
     // Set SF Symbol
     self.serverField.textField.stringValue = @"";
     [self.serverField setPopupButtonSymbolName:@""];
+    self.serverField.textField.delegate = self;
     
     // Create popup menu
     self.bookmarkMenu = [[NSMenu alloc] init];
@@ -253,6 +281,11 @@
     if(![self.serverField.textField.stringValue isEqualToString:@""]) {
         if (index != NSNotFound) {
             [self.bookmarkMenu addItem:[NSMenuItem separatorItem]];
+            NSMenuItem *updateBm = [self.bookmarkMenu addItemWithTitle:@"Update Bookmark"
+                                         action:@selector(onUpdateBookmark:)
+                                  keyEquivalent:@""];
+            updateBm.target = self;
+            
             NSMenuItem *removeBm = [self.bookmarkMenu addItemWithTitle:@"Remove Bookmark"
                                          action:@selector(onRemoveBookmark:)
                                   keyEquivalent:@""];
@@ -291,17 +324,26 @@
     [self.servers addObject:self.serverField.textField.stringValue];
     [[NSUserDefaults standardUserDefaults] setObject:self.servers forKey:@"Servers"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    [BookmarkManager storeCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue] username:self.loginField.stringValue password:self.passwordField.stringValue];
+}
+
+- (void)onUpdateBookmark:(id)sender {
+    [BookmarkManager storeCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue] username:self.loginField.stringValue password:self.passwordField.stringValue];
 }
 
 - (void)onRemoveBookmark:(id)sender {
     [self.servers removeObject:self.serverField.textField.stringValue];
     [[NSUserDefaults standardUserDefaults] setObject:self.servers forKey:@"Servers"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    [BookmarkManager removeCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue]];
 }
 
 - (void)onSelectBookmark:(id)sender {
     NSMenuItem *item = (NSMenuItem *) sender;
     self.serverField.textField.stringValue = item.title;
+    [self serverFieldUpdated];
 }
 
 - (NSTextField*)makeTextField:(NSString*)ph {

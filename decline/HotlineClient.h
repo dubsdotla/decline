@@ -11,6 +11,7 @@
 #import <CoreServices/CoreServices.h>
 
 #import "AppSupport.h"
+#import "BookmarkManager.h"
 #import "Constants.h"
 #import "CustomTextFieldWithPopup.h"
 #import "NSAttributedString+RTFAdditions.h"
@@ -149,6 +150,7 @@
 @property (nonatomic) uint16_t bannerID;
 @property (nonatomic, copy) NSString *serverName;
 
+- (void)serverFieldUpdated;
 - (void)updateChatView;
 
 @end
