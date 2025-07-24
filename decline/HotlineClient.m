@@ -2847,7 +2847,7 @@ doCommandBySelector:(SEL)commandSelector
             
             if (20 + nameLen <= objectLen) {
                 NSData *nameData = [NSData dataWithBytes:(o + 20) length:nameLen];
-                NSString *name = [NSString autoDecodeStringWithBytes:nameData];
+                name = [NSString autoDecodeStringWithBytes:nameData];
             }
 
             NSLog(@"    • File[%lu] type='%s' creator='%s' size=%u script=%u name=\"%@\"",
