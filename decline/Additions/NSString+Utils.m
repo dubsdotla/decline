@@ -18,19 +18,34 @@
     return out;
 }
 
-#pragma mark – Hotline string decoder (EOR‐encoded)
-+ (NSString*)decodeHotlineString:(NSData*)data {
-    const uint8_t *in = data.bytes;
-    NSUInteger len     = data.length;
-    uint8_t *out       = malloc(len);
-    for (NSUInteger i = 0; i < len; i++) {
-        out[i] = 0xFF - in[i];
++ (NSString *)autoDecodeStringWithBytes:(NSData *)bytes {
+    NSString *decoded = nil;
+    BOOL lossy = NO;
+    NSDictionary *opts = @{
+        NSStringEncodingDetectionSuggestedEncodingsKey : @[
+            @(NSUTF8StringEncoding),
+            @(NSShiftJISStringEncoding)
+        ],
+        NSStringEncodingDetectionUseOnlySuggestedEncodingsKey : @YES
+    };
+    NSStringEncoding enc = [NSString stringEncodingForData:bytes
+                                           encodingOptions:opts
+                                           convertedString:&decoded
+                                       usedLossyConversion:&lossy];
+    if (enc != 0 && decoded) return decoded;
+
+    // Manual fallback loop
+    NSArray<NSNumber*> *candidates = @[
+        @(NSISOLatin1StringEncoding)
+    ];
+    for (NSNumber *n in candidates) {
+        decoded = [[NSString alloc] initWithData:bytes encoding:n.unsignedIntegerValue];
+        if (decoded) return decoded;
     }
-    NSString *s = [[NSString alloc] initWithBytesNoCopy:out
-                                                 length:len
-                                               encoding:NSUTF8StringEncoding
-                                           freeWhenDone:YES];
-    return s;
+
+    // Last resort: treat as MacRoman with loss
+    return [[NSString alloc] initWithData:bytes
+                                 encoding:NSMacOSRomanStringEncoding] ?: @"";
 }
 
 + (NSString *)nickthirteen:(NSString *)nickstring {

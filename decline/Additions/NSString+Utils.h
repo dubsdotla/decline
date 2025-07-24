@@ -13,7 +13,7 @@
 @interface NSString (Utils)
 
 + (NSString*)hexStringFromData:(NSData *)data;
-+ (NSString*)decodeHotlineString:(NSData*)data;
++ (NSString *)autoDecodeStringWithBytes:(NSData *)bytes;
 + (NSString *)nickthirteen:(NSString *)nickstring;
 - (NSString *)utiStringForFilenameExtension;
 

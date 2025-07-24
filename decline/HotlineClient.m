@@ -2024,10 +2024,10 @@ doCommandBySelector:(SEL)commandSelector
             waitUntilDone:NO];
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.window endSheet:self.connectingSheetWindow];
-        
         // if we haven’t already asked once, show the alert
         if (!self.triedOnce) {
+            [self.window endSheet:self.connectingSheetWindow];
+            
             self.triedOnce = YES;
             
             if(self.errorCode == 1) {
@@ -2843,13 +2843,11 @@ doCommandBySelector:(SEL)commandSelector
             // 16-bit name‐length
             uint16_t nameLen = CFSwapInt16BigToHost(*(uint16_t*)(o + 18));
 
-            NSString *name = @"<malformed>";
+            NSString *name = @"";
+            
             if (20 + nameLen <= objectLen) {
-                name = [[NSString alloc]
-                         initWithBytes:(o + 20)
-                                length:nameLen
-                              encoding:NSMacOSRomanStringEncoding]
-                       ?: @"<non-UTF8>";
+                NSData *nameData = [NSData dataWithBytes:(o + 20) length:nameLen];
+                NSString *name = [NSString autoDecodeStringWithBytes:nameData];
             }
 
             NSLog(@"    • File[%lu] type='%s' creator='%s' size=%u script=%u name=\"%@\"",
@@ -3476,7 +3474,12 @@ doCommandBySelector:(SEL)commandSelector
                 uint16_t oid = ntohs(*(uint16_t*)p); p += 2;
                 uint16_t ol  = ntohs(*(uint16_t*)p); p += 2;
                                 
-                if (oid == 101) [agr appendString:[[NSString alloc] initWithBytes:p length:ol encoding:NSUTF8StringEncoding]];
+                NSData *stringData = [NSData dataWithBytes:p length:ol];
+                NSString *autoString = [NSString autoDecodeStringWithBytes:stringData];
+                                
+                if (oid == 101) [agr appendString:[[NSString alloc] initWithString:autoString]];
+
+                //if (oid == 101) [agr appendString:[[NSString alloc] initWithBytes:p length:ol encoding:NSUTF8StringEncoding]];
                 p += ol;
             }
             self.serverAgreementMessage = agr;
