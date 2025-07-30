@@ -53,12 +53,12 @@
         self.awaitingOpenUser = NO;
         self.awaitingModifyReply = NO;
         
-        self.canDownloadFile = NO;
+        self.canDownloadFile = YES;
         self.canDownloadFolder = NO;
         self.canUploadFile = NO;
         self.canUploadFolder = NO;
-        self.canReadNews = NO;
-        self.canPostNews = NO;
+        self.canReadNews = YES;
+        self.canPostNews = YES;
         self.canSendBroadcast = NO;
         self.canSendMessage = NO;
         
