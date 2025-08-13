@@ -13,6 +13,8 @@
 #import "AppSupport.h"
 #import "BookmarkManager.h"
 #import "Constants.h"
+#import "CustomNotification.h"
+#import "CustomNotificationManager.h"
 #import "CustomTextFieldWithPopup.h"
 #import "NSAttributedString+RTFAdditions.h"
 #import "NSColor+Hex.h"

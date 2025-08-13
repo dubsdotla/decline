@@ -12,6 +12,8 @@
 #import "AppDelegate.h"
 #import "AppIconManager.h"
 #import "AppSupport.h"
+#import "CustomNotification.h"
+#import "CustomNotificationManager.h"
 #import "CustomTextFieldWithPopup.h"
 #import "NSAttributedString+RTFAdditions.h"
 #import "NSColor+Hex.h"

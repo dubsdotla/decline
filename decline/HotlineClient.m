@@ -1224,7 +1224,7 @@ doCommandBySelector:(SEL)commandSelector
     self.pathControl.target = self;
     self.pathControl.action = @selector(pathControlDidChange:);
     // build our own items array so root is “/”
-   // pathControl.pathItems = [self pathItemsForURL:self.currentDirectoryURL];
+    
     self.pathControl.pathItems = [self pathItemsForURL:[NSURL fileURLWithPath:self.filePath]];
 
     [bg addSubview:self.pathControl];
@@ -1256,7 +1256,6 @@ doCommandBySelector:(SEL)commandSelector
     tv.dataSource = self;
     tv.target     = self;
     tv.doubleAction = @selector(filesTableViewDidDoubleClick:);
-    //tv.rowHeight  = 32;
     tv.usesAlternatingRowBackgroundColors = true;
     tv.style = NSTableViewStyleFullWidth;
 
@@ -1268,22 +1267,16 @@ doCommandBySelector:(SEL)commandSelector
 
     // Name column
     NSTableColumn *nameCol = [[NSTableColumn alloc] initWithIdentifier:@"name"];
-    //nameCol.title = @"Name"; nameCol.width = 500;
     nameCol.minWidth = 250;
-    //nameCol.maxWidth = 800;
     [tv addTableColumn:nameCol];
 
     // Kind column
     NSTableColumn *kindCol = [[NSTableColumn alloc] initWithIdentifier:@"kind"];
-    //kindCol.title = @"Kind"; kindCol.width = 200;
     kindCol.minWidth = 200;
-    //kindCol.maxWidth = 500;
-    //kindCol.maxWidth = 220;
     [tv addTableColumn:kindCol];
 
     // Size column
     NSTableColumn *sizeCol = [[NSTableColumn alloc] initWithIdentifier:@"size"];
-    //sizeCol.title = @"Size"; sizeCol.width = 80;
     sizeCol.width = sizeCol.minWidth = sizeCol.maxWidth = 80;
     [tv addTableColumn:sizeCol];
     
@@ -1296,7 +1289,6 @@ doCommandBySelector:(SEL)commandSelector
 
     // Size column is fixed unless the user drags it:
     sizeCol.resizingMask = NSTableColumnNoResizing;
-    //sizeCol.
 
     scroll.documentView = tv;
     self.filesTableView = tv;
@@ -1306,8 +1298,6 @@ doCommandBySelector:(SEL)commandSelector
     
     [self.filesTableView setHeaderView:nil];
 
-    // Load the initial directory contents
-    //[self loadFilesInDirectory:self.currentDirectoryURL];
     [tv reloadData];
 }
 
@@ -2322,7 +2312,7 @@ doCommandBySelector:(SEL)commandSelector
                 self.serverName = name;
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    self.window.title = [NSString stringWithFormat:@"%@ - %@", self.window.title, self.serverName];
+                    self.window.title = [NSString stringWithFormat:@"%@ - %@", self.serverField.textField.stringValue, self.serverName];
                 });
             }
             
@@ -2587,7 +2577,7 @@ doCommandBySelector:(SEL)commandSelector
                 self.serverName = name;
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    self.window.title = [NSString stringWithFormat:@"%@ - %@", self.window.title, self.serverName];
+                    self.window.title = [NSString stringWithFormat:@"%@ - %@", self.serverField.textField.stringValue, self.serverName];
                 });
                 
             } break;
@@ -3333,6 +3323,11 @@ doCommandBySelector:(SEL)commandSelector
         if (oid == 101) {
             NSString *article = [[NSString alloc] initWithBytes:p length:ol encoding:NSUTF8StringEncoding];
             if (article) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[CustomNotificationManager sharedManager] showNotificationWithMessage:article textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
+                });
+                
                 [self.newsItems insertObject:article atIndex:0];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (self.uiState == ClientUIStateNews) {
@@ -3574,13 +3569,17 @@ doCommandBySelector:(SEL)commandSelector
                 
                 if (text.length) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        NSAlert *alert = [[NSAlert alloc] init];
+                        /*NSAlert *alert = [[NSAlert alloc] init];
                         alert.messageText    = @"Broadcast Message";
                         alert.informativeText = text;
                         alert.alertStyle     = NSAlertStyleInformational;
                         
                         [alert addButtonWithTitle:@"OK"];
-                        [alert beginSheetModalForWindow:self.window completionHandler:nil];
+                        [alert beginSheetModalForWindow:self.window completionHandler:nil];*/
+                        
+                        NSString *broadcastMsg = [NSString stringWithFormat:@"BROADCAST MESSAGE:  %@", text];
+                        
+                        [[CustomNotificationManager sharedManager] showNotificationWithMessage:broadcastMsg textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
                     });
                 }
             }
@@ -3715,6 +3714,9 @@ doCommandBySelector:(SEL)commandSelector
             NSString *line = [msg hasSuffix:@"\n"] ? msg : [msg stringByAppendingString:@"\n"];
             NSAttributedString *attrLine = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@", line]
                                                                            attributes:attrs];
+            
+            [[CustomNotificationManager sharedManager] showNotificationWithMessage:msg textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
+            
             [self.cachedChatContents appendAttributedString:attrLine];
         }
         
