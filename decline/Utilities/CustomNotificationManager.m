@@ -93,6 +93,110 @@ static const CGFloat kVerticalSpacing = 4.0;
     }
 }
 
+- (NSString *)textSizeStringFromEnum:(NSUInteger)integer {
+    if(integer == NotificationTextSizeSmall) {
+        return @"Small";
+    }
+    
+    else if(integer == NotificationTextSizeMedium) {
+        return @"Medium";
+    }
+    
+    else {
+        return @"Large";
+    }
+}
+
+- (NSUInteger)textSizeEnumFromString:(NSString *)string {
+    if([string isEqualToString:@"Small"]) {
+        return NotificationTextSizeSmall;
+    }
+    
+    else if([string isEqualToString:@"Medium"]) {
+        return NotificationTextSizeMedium;
+    }
+    
+    else {
+        return NotificationTextSizeLarge;
+    }
+}
+
+- (NSString *)positionStringFromEnum:(NSUInteger)integer {
+    if(integer == NotificationPositionTopLeft) {
+        return @"Top Left";
+    }
+    
+    else if(integer == NotificationPositionTopCenter) {
+        return @"Top Center";
+    }
+    
+    else if(integer == NotificationPositionTopRight) {
+        return @"Top Right";
+    }
+    
+    else if(integer == NotificationPositionLeftCenter) {
+        return @"Left Center";
+    }
+    
+    else if(integer == NotificationPositionCenter) {
+        return @"Center";
+    }
+    
+    else if(integer == NotificationPositionRightCenter) {
+        return @"Right Center";
+    }
+    
+    else if(integer == NotificationPositionBottomLeft) {
+        return @"Bottom Left";
+    }
+    
+    else if(integer == NotificationPositionBottomCenter) {
+        return @"Bottom Center";
+    }
+    
+    else {
+        return @"Bottom Right";
+    }
+}
+
+- (NSUInteger)positionEnumFromString:(NSString *)string {
+    if([string isEqualToString:@"Top Left"]) {
+        return NotificationPositionTopLeft;
+    }
+    
+    else if([string isEqualToString:@"Top Center"]) {
+        return NotificationPositionTopCenter;
+    }
+    
+    else if([string isEqualToString:@"Top Right"]) {
+        return NotificationPositionTopRight;
+    }
+    
+    else if([string isEqualToString:@"Left Center"]) {
+        return NotificationPositionLeftCenter;
+    }
+    
+    else if([string isEqualToString:@"Center"]) {
+        return NotificationPositionCenter;
+    }
+    
+    else if([string isEqualToString:@"Right Center"]) {
+        return NotificationPositionRightCenter;
+    }
+    
+    else if([string isEqualToString:@"Bottom Left"]) {
+        return NotificationPositionBottomLeft;
+    }
+    
+    else if([string isEqualToString:@"Bottom Center"]) {
+        return NotificationPositionBottomCenter;
+    }
+    
+    else {
+        return NotificationPositionBottomRight;
+    }
+}
+
 -  (void)notificationDidClose:(CustomNotification *)notification {
     [self.activeNotifications removeObject:notification];
 }

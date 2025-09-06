@@ -11,13 +11,25 @@
 
 @implementation GeneralPreferencesViewController
 
+- (void)viewDidLayout {
+    [super viewDidLayout];
+
+    // Compute once the view has a real layout
+    NSView *v = self.view;
+    NSSize s = v.translatesAutoresizingMaskIntoConstraints ? v.bounds.size : v.fittingSize;
+    if (s.width  < 400) s.width  = 400;   // optional floor
+    if (s.height < 250) s.height = 250;   // optional floor
+
+    // Only update if it actually changed (prevents resize loops)
+    if (!NSEqualSizes(self.preferredContentSize, s)) {
+        self.preferredContentSize = s;    // <-- use the property, don't override the method
+    }
+}
+
 - (void)loadView {
     NSView *v = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 400, 250)];
     v.translatesAutoresizingMaskIntoConstraints = NO;
     self.view = v;
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    // ensure defaults are registered (in case showPreferences called first)
 
     // --- Default Nick ---
     NSTextField *nickLabel = [NSTextField labelWithString:@"Default Nick:"];
@@ -113,47 +125,47 @@
     [super viewWillAppear];
     
     // Populate its initial state from defaults
-    BOOL showJoin = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowJoinLeaveMessages"];
+    BOOL showJoin = [defaults boolForKey:@"ShowJoinLeaveMessages"];
     self.joinLeaveCheckbox.state = showJoin ? NSControlStateValueOn : NSControlStateValueOff;
     
-    BOOL showNick = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowNickChangeMessages"];
+    BOOL showNick = [defaults boolForKey:@"ShowNickChangeMessages"];
     self.nickChangeCheckbox.state = showNick ? NSControlStateValueOn : NSControlStateValueOff;
     
-    BOOL showRight = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowUserlistOnRightSide"];
+    BOOL showRight = [defaults boolForKey:@"ShowUserlistOnRightSide"];
     self.showUserlistRightCheckbox.state = showRight ? NSControlStateValueOn : NSControlStateValueOff;
     
-    BOOL showSend = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowChatSendButton"];
+    BOOL showSend = [defaults boolForKey:@"ShowChatSendButton"];
     self.showChatSendButtonCheckbox.state = showSend ? NSControlStateValueOn : NSControlStateValueOff;
 }
 
 - (void)defaultNickChanged:(NSTextField *)sender {
-    [[NSUserDefaults standardUserDefaults] setObject:sender.stringValue forKey:@"DefaultNick"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setObject:sender.stringValue forKey:@"DefaultNick"];
+    [defaults synchronize];
 }
 
 - (void)defaultIconChanged:(NSTextField *)sender {
-    [[NSUserDefaults standardUserDefaults] setObject:sender.stringValue forKey:@"DefaultIcon"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setObject:sender.stringValue forKey:@"DefaultIcon"];
+    [defaults synchronize];
 }
 
 #pragma mark – Action
 
 - (void)toggleJoinLeave:(NSButton*)sender {
     BOOL newVal = (sender.state == NSControlStateValueOn);
-    [[NSUserDefaults standardUserDefaults] setBool:newVal forKey:@"ShowJoinLeaveMessages"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setBool:newVal forKey:@"ShowJoinLeaveMessages"];
+    [defaults synchronize];
 }
 
 - (void)toggleNickChange:(NSButton*)sender {
     BOOL newVal = (sender.state == NSControlStateValueOn);
-    [[NSUserDefaults standardUserDefaults] setBool:newVal forKey:@"ShowNickChangeMessages"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setBool:newVal forKey:@"ShowNickChangeMessages"];
+    [defaults synchronize];
 }
 
 - (void)toggleUserlistSide:(NSButton*)sender {
     BOOL newVal = (sender.state == NSControlStateValueOn);
-    [[NSUserDefaults standardUserDefaults] setBool:newVal forKey:@"ShowUserlistOnRightSide"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setBool:newVal forKey:@"ShowUserlistOnRightSide"];
+    [defaults synchronize];
     
     AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
     [appDel updateChatView];
@@ -161,8 +173,8 @@
 
 - (void)toggleSendButton:(NSButton*)sender {
     BOOL newVal = (sender.state == NSControlStateValueOn);
-    [[NSUserDefaults standardUserDefaults] setBool:newVal forKey:@"ShowChatSendButton"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setBool:newVal forKey:@"ShowChatSendButton"];
+    [defaults synchronize];
     
     AppDelegate *appDel = (AppDelegate *)[NSApp delegate];
     [appDel updateChatView];

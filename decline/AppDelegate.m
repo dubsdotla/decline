@@ -29,6 +29,8 @@
 
 @end
 
+NSUserDefaults *defaults;
+
 @implementation AppDelegate
 
 - (IBAction)showPreferences:(id)sender {
@@ -233,21 +235,25 @@
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp activateIgnoringOtherApps:YES];
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
+    defaults = [NSUserDefaults standardUserDefaults];
+
     [defaults registerDefaults:@{
         @"DefaultNick": @"decline n00b",
         @"DefaultIcon": @"148",
         @"ShowJoinLeaveMessages": @NO,
         @"ShowNickChangeMessages": @NO,
         @"ShowUserlistOnRightSide" : @YES,
-        @"ShowChatSendButton" : @NO
+        @"ShowChatSendButton" : @NO,
+        @"NotificationsEnabled" : @YES,
+        @"NotificationTextSize" : @(NotificationTextSizeMedium),
+        @"NotificationPosition" : @(NotificationPositionCenter),
+        @"NotificationSticky" : @YES
     }];
        
     //Nuke prefs
     /*NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-    [[NSUserDefaults standardUserDefaults] synchronize];*/
+    [defaults removePersistentDomainForName:appDomain];
+    [defaults synchronize];*/
     
     [AppIconManager updateDockIconToMatchCurrentAppearance];
         

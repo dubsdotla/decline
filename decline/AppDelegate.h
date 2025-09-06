@@ -11,6 +11,8 @@
 #import "PreferencesWindowController.h"
 #import "HotlineClient.h"
 
+extern NSUserDefaults *defaults;
+
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
 @property (strong) PreferencesWindowController *preferencesWindowController;

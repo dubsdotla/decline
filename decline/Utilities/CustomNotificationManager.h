@@ -24,6 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 -  (void)notificationDidClose:(CustomNotification *)notification;
 
+
+- (NSString *)textSizeStringFromEnum:(NSUInteger)integer;
+- (NSUInteger)textSizeEnumFromString:(NSString *)string;
+- (NSString *)positionStringFromEnum:(NSUInteger)integer;
+- (NSUInteger)positionEnumFromString:(NSString *)string;
+
 @end
 
 NS_ASSUME_NONNULL_END

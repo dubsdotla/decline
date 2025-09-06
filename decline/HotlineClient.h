@@ -35,7 +35,7 @@
 #import "FileTransferManager.h"
 #import "UserTransactions.h"
 
-@interface HotlineClient : NSObject <NSStreamDelegate, NSToolbarDelegate, NSToolbarItemValidation, NSTableViewDataSource, NSTableViewDelegate, NSComboBoxDelegate, NSWindowDelegate, FileTransferManagerDelegate>
+@interface HotlineClient : NSObject <NSControlTextEditingDelegate, NSStreamDelegate, NSToolbarDelegate, NSToolbarItemValidation, NSTableViewDataSource, NSTableViewDelegate, NSComboBoxDelegate, NSWindowDelegate, FileTransferManagerDelegate>
 
 // uuid
 @property (nonatomic, strong) NSUUID *uuid;
@@ -69,6 +69,11 @@
 @property (strong) NSTextView   *chatTextView;
 @property (strong) NSTableView  *userListView;
 @property (strong) NSTextField  *messageField;
+
+@property (nonatomic) NSMutableArray<NSString *> *history;
+@property (nonatomic) NSInteger historyIndex;   // == history.count means "live buffer"
+@property (nonatomic) NSString *stash;          // stash current typing before history
+
 @property (strong) NSButton     *sendButton;
 
 // News UI
