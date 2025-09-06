@@ -14,12 +14,11 @@
 - (instancetype)init {
     
     if (self = [super init]) {
-    
         self.uuid = [NSUUID UUID];
         
         self.servers = [[NSMutableArray alloc] init];
         
-        NSArray *serverlist = [[NSUserDefaults standardUserDefaults] arrayForKey:@"Servers"];
+        NSArray *serverlist = [defaults arrayForKey:@"Servers"];
         [self.servers addObjectsFromArray:serverlist];
         
         self.showAgreementMessage = YES;
@@ -38,6 +37,9 @@
         self.connectionWindow.restorable = NO;
         [self.connectionWindow makeKeyAndOrderFront:nil];
         self.connectionWindow.delegate = self;
+        
+        self.history = [NSMutableArray array];
+        self.historyIndex = 0;
         
         self.cachedChatContents = [[NSMutableAttributedString alloc] init];
         self.transactions = [[UserTransactions alloc] init];
@@ -161,7 +163,7 @@
     self.passwordField = [self makeSecureField:@""];
     
     self.nickField = [self makeTextField:@""];
-    NSString *defaultNick = [[NSUserDefaults standardUserDefaults]
+    NSString *defaultNick = [defaults
                              stringForKey:@"DefaultNick"];
     
     if(defaultNick != nil) {
@@ -322,8 +324,8 @@
 
 - (void)onAddBookmark:(id)sender {
     [self.servers addObject:self.serverField.textField.stringValue];
-    [[NSUserDefaults standardUserDefaults] setObject:self.servers forKey:@"Servers"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setObject:self.servers forKey:@"Servers"];
+    [defaults synchronize];
     
     [BookmarkManager storeCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue] username:self.loginField.stringValue password:self.passwordField.stringValue];
 }
@@ -334,8 +336,8 @@
 
 - (void)onRemoveBookmark:(id)sender {
     [self.servers removeObject:self.serverField.textField.stringValue];
-    [[NSUserDefaults standardUserDefaults] setObject:self.servers forKey:@"Servers"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [defaults setObject:self.servers forKey:@"Servers"];
+    [defaults synchronize];
     
     [BookmarkManager removeCredentialsForAddress:[NSString stringWithFormat:@"hotline://%@", self.serverField.textField.stringValue]];
 }
@@ -696,16 +698,16 @@
 
 - (IBAction)toggleUserListPosition:(id)sender {
     
-    BOOL showRight = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowUserlistOnRightSide"];
+    BOOL showRight = [defaults boolForKey:@"ShowUserlistOnRightSide"];
     
     if(showRight) {
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"ShowUserlistOnRightSide"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [defaults setBool:NO forKey:@"ShowUserlistOnRightSide"];
+        [defaults synchronize];
     }
     
     else {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ShowUserlistOnRightSide"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [defaults setBool:YES forKey:@"ShowUserlistOnRightSide"];
+        [defaults synchronize];
     }
     
     [self updateChatView];
@@ -829,7 +831,7 @@
     self.chatTextView            = chatTV;
 
     // Put both panes into the split view;
-    BOOL showRight = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowUserlistOnRightSide"];
+    BOOL showRight = [defaults boolForKey:@"ShowUserlistOnRightSide"];
    
     if(showRight) {
         [splitView addArrangedSubview:chatPane];
@@ -863,7 +865,7 @@
     [chatPane addSubview:sendBtn];
     self.sendButton = sendBtn;
     
-    BOOL showSendButton = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowChatSendButton"];
+    BOOL showSendButton = [defaults boolForKey:@"ShowChatSendButton"];
         
     if(showSendButton) {
         self.sendButton.hidden = NO;
@@ -922,6 +924,7 @@
     [self.userListView reloadData];
 }
 
+#pragma mark - NSControlTextEditingDelegate
 - (BOOL)control:(NSControl*)control
     textView:(NSTextView*)textView
 doCommandBySelector:(SEL)commandSelector
@@ -931,7 +934,50 @@ doCommandBySelector:(SEL)commandSelector
         [self onSend:control];
         return YES;    // we handled it—don’t also end editing
     }
+    
+    else if (commandSelector == @selector(moveUp:)) {
+        [self showPreviousHistoryIn:textView];
+        return YES;
+    }
+    
+    else if (commandSelector == @selector(moveDown:)) {
+        [self showNextHistoryIn:textView];
+        return YES;
+    }
+    
     return NO;         // all other keys/text get standard behavior
+}
+
+#pragma mark - History Navigation
+- (void)showPreviousHistoryIn:(NSTextView *)textView {
+    if (self.history.count == 0) { NSBeep(); return; }
+
+    if (self.historyIndex == self.history.count) {
+        self.stash = textView.string ?: @"";
+    }
+    if (self.historyIndex > 0) {
+        self.historyIndex--;
+        [self setEditor:textView toString:self.history[self.historyIndex]];
+    } else {
+        NSBeep();
+    }
+}
+
+- (void)showNextHistoryIn:(NSTextView *)textView {
+    if (self.historyIndex < self.history.count - 1) {
+        self.historyIndex++;
+        [self setEditor:textView toString:self.history[self.historyIndex]];
+    } else if (self.historyIndex == self.history.count - 1) {
+        self.historyIndex = self.history.count;
+        [self setEditor:textView toString:self.stash ?: @""];
+    } else {
+        NSBeep();
+    }
+}
+
+- (void)setEditor:(NSTextView *)textView toString:(NSString *)s {
+    textView.string = s ?: @"";
+    [textView setSelectedRange:NSMakeRange(textView.string.length, 0)];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tv {
@@ -1412,7 +1458,7 @@ doCommandBySelector:(SEL)commandSelector
     
     [self transformToChatUI];
     
-    self.iconNumber = (uint32_t)[[NSUserDefaults standardUserDefaults] integerForKey:@"DefaultIcon"];
+    self.iconNumber = (uint32_t)[defaults integerForKey:@"DefaultIcon"];
     
     NSArray<NSString *> *components = [self.serverField.textField.stringValue componentsSeparatedByString:@":"];
            
@@ -3325,7 +3371,11 @@ doCommandBySelector:(SEL)commandSelector
             if (article) {
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[CustomNotificationManager sharedManager] showNotificationWithMessage:article textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
+                    NotificationTextSize textsize = [defaults integerForKey:@"NotificationTextSize"];
+                    NotificationPosition position = [defaults integerForKey:@"NotificationPosition"];
+                    BOOL sticky = [defaults boolForKey:@"NotificationSticky"];
+                    
+                    [[CustomNotificationManager sharedManager] showNotificationWithMessage:article textSize:textsize position:position sticky:sticky];
                 });
                 
                 [self.newsItems insertObject:article atIndex:0];
@@ -3454,7 +3504,7 @@ doCommandBySelector:(SEL)commandSelector
                             NSString *oldNick = [self.users[idxs.firstIndex] objectForKey:@"nick"];
                             [self.users removeObjectsAtIndexes:idxs];
                             [self.userListView reloadData];
-                            if ([[NSUserDefaults standardUserDefaults] boolForKey:@"ShowJoinLeaveMessages"] && oldNick.length) {
+                            if ([defaults boolForKey:@"ShowJoinLeaveMessages"] && oldNick.length) {
                                 [self appendSpecialNoticeMessage:[NSString stringWithFormat:@"%@ has left", oldNick] forType:SpecialNoticeJoinLeave];
                             }
                         }
@@ -3579,7 +3629,11 @@ doCommandBySelector:(SEL)commandSelector
                         
                         NSString *broadcastMsg = [NSString stringWithFormat:@"BROADCAST MESSAGE:  %@", text];
                         
-                        [[CustomNotificationManager sharedManager] showNotificationWithMessage:broadcastMsg textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
+                        NotificationTextSize textsize = [defaults integerForKey:@"NotificationTextSize"];
+                        NotificationPosition position = [defaults integerForKey:@"NotificationPosition"];
+                        BOOL sticky = [defaults boolForKey:@"NotificationSticky"];
+                        
+                        [[CustomNotificationManager sharedManager] showNotificationWithMessage:text textSize:textsize position:position sticky:sticky];
                     });
                 }
             }
@@ -3667,7 +3721,7 @@ doCommandBySelector:(SEL)commandSelector
     dispatch_async(dispatch_get_main_queue(), ^{
 
         if(sn == SpecialNoticeJoinLeave) {
-            BOOL showJoinLeave = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowJoinLeaveMessages"];
+            BOOL showJoinLeave = [defaults boolForKey:@"ShowJoinLeaveMessages"];
             
             if(!showJoinLeave) {
                 return;
@@ -3675,7 +3729,7 @@ doCommandBySelector:(SEL)commandSelector
         }
         
         else if(sn == SpecialNoticeNameChange) {
-            BOOL showNickChange = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowNickChangeMessages"];
+            BOOL showNickChange = [defaults boolForKey:@"ShowNickChangeMessages"];
             
             if(!showNickChange) {
                 return;
@@ -3715,7 +3769,11 @@ doCommandBySelector:(SEL)commandSelector
             NSAttributedString *attrLine = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@", line]
                                                                            attributes:attrs];
             
-            [[CustomNotificationManager sharedManager] showNotificationWithMessage:msg textSize:NotificationTextSizeMedium position:NotificationPositionCenter sticky:YES];
+            NotificationTextSize textsize = [defaults integerForKey:@"NotificationTextSize"];
+            NotificationPosition position = [defaults integerForKey:@"NotificationPosition"];
+            BOOL sticky = [defaults boolForKey:@"NotificationSticky"];
+            
+            [[CustomNotificationManager sharedManager] showNotificationWithMessage:msg textSize:textsize position:position sticky:sticky];
             
             [self.cachedChatContents appendAttributedString:attrLine];
         }
@@ -3760,6 +3818,14 @@ doCommandBySelector:(SEL)commandSelector
     NSString *text = self.messageField.stringValue;
     if(text.length==0) return;
     
+    // Save into history (skip duplicate consecutive)
+    if (!self.history.lastObject || ![self.history.lastObject isEqualToString:text]) {
+        [self.history addObject:text];
+    }
+
+    self.historyIndex = self.history.count;
+    self.stash = @"";
+    
     BOOL isEmote = NO;
 
     if([text hasPrefix:@"/msg"]) {
@@ -3769,13 +3835,9 @@ doCommandBySelector:(SEL)commandSelector
             NSString *command = parts[0];
             NSString *name    = parts[1];
             
-            // 2. Compute where the “message” starts in the original string
+            // Compute where the “message” starts in the original string
             NSUInteger offset = command.length + 1 + name.length + 1;
             NSString *message = [text substringFromIndex:offset];
-            
-            NSLog(@"command = %@", command); // "/msg"
-            NSLog(@"name    = %@", name);    // "name"
-            NSLog(@"message = %@", message); // "text with spaces"
             
             uint16_t socket = [self getSocketForNick:name];
 
@@ -3809,6 +3871,26 @@ doCommandBySelector:(SEL)commandSelector
             self.nickname = nickname;
             
             [self.transactions sendSetUserInfoTransactionWithNick:self.nickname iconNum:self.iconNumber forStream:self.outputStream];
+        }
+    }
+    
+    else if([text hasPrefix:@"/notify"]) {
+        NSArray<NSString*> *parts = [text componentsSeparatedByString:@" "];
+
+        if (parts.count >= 2) {
+            NSString *command = parts[0];
+            
+            // Compute where the “message” starts in the original string
+            NSUInteger offset = command.length + 1;
+            NSString *message = [text substringFromIndex:offset];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NotificationTextSize textsize = [defaults integerForKey:@"NotificationTextSize"];
+                NotificationPosition position = [defaults integerForKey:@"NotificationPosition"];
+                BOOL sticky = [defaults boolForKey:@"NotificationSticky"];
+                
+                [[CustomNotificationManager sharedManager] showNotificationWithMessage:message textSize:textsize position:position sticky:sticky];
+            });
         }
     }
     
